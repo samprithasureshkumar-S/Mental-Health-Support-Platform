@@ -1,6 +1,7 @@
 <?php
 require_once '../config/db.php';
 require_once '../includes/auth_helper.php';
+require_once '../includes/achievements.php';
 
 // Secure the route to 'user' role
 restrict_to_role('user');
@@ -17,6 +18,17 @@ try {
     $error = "Could not fetch your posts.";
 }
 
+$recommended_resources = [];
+if (!empty($_GET['rec'])) {
+    $rec_ids = array_filter(array_map('intval', explode(',', $_GET['rec'])));
+    if (!empty($rec_ids)) {
+        $placeholders = implode(',', array_fill(0, count($rec_ids), '?'));
+        $stmt = $pdo->prepare("SELECT * FROM resources WHERE id IN ($placeholders)");
+        $stmt->execute($rec_ids);
+        $recommended_resources = $stmt->fetchAll();
+    }
+}
+
 require_once '../includes/header.php';
 ?>
 
@@ -26,6 +38,12 @@ require_once '../includes/header.php';
         <ul class="sidebar-nav">
             <li><a href="<?php echo $base_url; ?>/user/dashboard.php" class="active">My Posts</a></li>
             <li><a href="<?php echo $base_url; ?>/user/create_post.php">Create New Post</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/mood_log.php">Log Mood</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/mood_history.php">Mood History</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/journal.php">Wellness Journal</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/volunteers.php">Volunteers</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/messages.php">Messages</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/appointments.php">My Appointments</a></li>
             <li><a href="<?php echo $base_url; ?>/resources.php">Resources</a></li>
             <li><a href="<?php echo $base_url; ?>/emergency.php">Emergency Contacts</a></li>
         </ul>
@@ -44,6 +62,29 @@ require_once '../includes/header.php';
         <?php if (isset($error)): ?>
             <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
+
+        <?php if (!empty($recommended_resources)): ?>
+            <div class="card recommend-banner">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">📚 Recommended For You</h3>
+                <div class="resource-grid">
+                    <?php foreach ($recommended_resources as $resource): ?>
+                        <div class="card resource-card">
+                            <div>
+                                <span class="post-category" style="margin-bottom: 0.8rem; display: inline-block;"><?php echo htmlspecialchars($resource['category']); ?></span>
+                                <h4 style="margin-bottom: 0.5rem;"><?php echo htmlspecialchars($resource['title']); ?></h4>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem;"><?php echo htmlspecialchars(substr($resource['content'], 0, 100)); ?>...</p>
+                            </div>
+                            <a href="<?php echo $base_url; ?>/resources.php" style="font-size: 0.85rem; color: var(--accent-secondary); margin-top: 0.8rem; display: inline-block;">Read more &rarr;</a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <div class="card">
+            <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">My Achievements</h3>
+            <?php echo render_badges($pdo, $user_id); ?>
+        </div>
 
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
             <?php if (empty($posts)): ?>

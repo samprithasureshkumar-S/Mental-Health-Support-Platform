@@ -11,9 +11,11 @@ $error_msg = $_GET['error'] ?? '';
 // Fetch Stats
 try {
     $user_count = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    $volunteer_count = $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'volunteer'")->fetchColumn();
+    $total_post_count = $pdo->query("SELECT COUNT(*) FROM posts")->fetchColumn();
     $pending_count = $pdo->query("SELECT COUNT(*) FROM posts WHERE status = 'pending'")->fetchColumn();
-    $approved_count = $pdo->query("SELECT COUNT(*) FROM posts WHERE status = 'approved'")->fetchColumn();
     $resource_count = $pdo->query("SELECT COUNT(*) FROM resources")->fetchColumn();
+    $urgent_count = $pdo->query("SELECT COUNT(*) FROM posts WHERE is_urgent = 1 AND status != 'rejected'")->fetchColumn();
     
     // Fetch Pending Posts for Moderation
     $stmt = $pdo->query("SELECT p.*, u.username FROM posts p JOIN users u ON p.user_id = u.id WHERE p.status = 'pending' ORDER BY p.created_at ASC");
@@ -30,8 +32,10 @@ require_once '../includes/header.php';
         <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Admin Menu</h3>
         <ul class="sidebar-nav">
             <li><a href="/admin/dashboard.php" class="active">Overview & Moderation</a></li>
+            <li><a href="/admin/analytics.php">Analytics</a></li>
             <li><a href="/admin/users.php">Manage Users</a></li>
             <li><a href="/admin/resources.php">Manage Resources</a></li>
+            <li><a href="/admin/polls.php">Manage Polls</a></li>
             <li><a href="/resources.php">View Resources</a></li>
             <li><a href="/emergency.php">Emergency Helpline</a></li>
         </ul>
@@ -51,23 +55,37 @@ require_once '../includes/header.php';
             <div class="alert alert-danger"><?php echo htmlspecialchars($error_msg); ?></div>
         <?php endif; ?>
 
+        <?php if ($urgent_count > 0): ?>
+            <div class="alert alert-danger">
+                ⚠ <?php echo $urgent_count; ?> post<?php echo $urgent_count > 1 ? 's' : ''; ?> flagged as urgent — review immediately.
+            </div>
+        <?php endif; ?>
+
         <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="card stat-card">
                 <span class="stat-val"><?php echo $user_count; ?></span>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Registered Users</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Total Users</p>
+            </div>
+            <div class="card stat-card">
+                <span class="stat-val" style="color: var(--accent-secondary);"><?php echo $volunteer_count; ?></span>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Total Volunteers</p>
+            </div>
+            <div class="card stat-card" style="border-color: rgba(16, 185, 129, 0.3);">
+                <span class="stat-val"><?php echo $total_post_count; ?></span>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Total Posts</p>
             </div>
             <div class="card stat-card" style="border-color: rgba(245, 158, 11, 0.3);">
                 <span class="stat-val" style="color: var(--warning);"><?php echo $pending_count; ?></span>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Pending Moderation</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Pending Posts</p>
             </div>
-            <div class="card stat-card" style="border-color: rgba(16, 185, 129, 0.3);">
-                <span class="stat-val"><?php echo $approved_count; ?></span>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Approved Posts</p>
+            <div class="card stat-card" style="border-color: rgba(239, 68, 68, 0.3);">
+                <span class="stat-val" style="color: var(--danger);"><?php echo $urgent_count; ?></span>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Urgent Posts</p>
             </div>
             <div class="card stat-card">
                 <span class="stat-val" style="color: var(--accent-secondary);"><?php echo $resource_count; ?></span>
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Library Resources</p>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Total Resources</p>
             </div>
         </div>
 
@@ -82,11 +100,14 @@ require_once '../includes/header.php';
             <?php else: ?>
                 <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <?php foreach ($pending_posts as $post): ?>
-                        <div style="background-color: rgba(15, 23, 42, 0.4); border: 1px solid var(--glass-border); padding: 1.5rem; border-radius: 8px;">
+                        <div class="<?php echo $post['is_urgent'] ? 'post-urgent' : ''; ?>" style="background-color: rgba(15, 23, 42, 0.4); border: 1px solid var(--glass-border); padding: 1.5rem; border-radius: 8px;">
                             <div class="post-header" style="margin-bottom: 0.8rem;">
                                 <span>Author alias: <strong>@<?php echo htmlspecialchars($post['username']); ?></strong> (ID: <?php echo $post['user_id']; ?>)</span>
                                 <span>Category: <strong class="post-category"><?php echo htmlspecialchars($post['category']); ?></strong></span>
                             </div>
+                            <?php if ($post['is_urgent']): ?>
+                                <span class="urgent-badge">⚠ URGENT</span>
+                            <?php endif; ?>
                             <h4 style="margin-bottom: 0.5rem;"><?php echo htmlspecialchars($post['title']); ?></h4>
                             <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.2rem;"><?php echo nl2br(htmlspecialchars($post['content'])); ?></p>
                             
