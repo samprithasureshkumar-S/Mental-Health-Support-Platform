@@ -1,6 +1,8 @@
 <?php
 require_once '../config/db.php';
 require_once '../includes/auth_helper.php';
+require_once '../includes/achievements.php';
+require_once '../includes/mailer.php';
 
 restrict_to_role('volunteer');
 
@@ -17,6 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $stmt = $pdo->prepare("INSERT INTO replies (post_id, volunteer_id, content) VALUES (?, ?, ?)");
         if ($stmt->execute([$post_id, $volunteer_id, $content])) {
+            evaluate_user_badges($pdo, $volunteer_id, 'volunteer');
+
+            $owner_stmt = $pdo->prepare("SELECT u.email, p.title FROM posts p JOIN users u ON p.user_id = u.id WHERE p.id = ?");
+            $owner_stmt->execute([$post_id]);
+            $owner = $owner_stmt->fetch();
+            if ($owner) {
+                send_email($owner['email'], 'A volunteer replied to your post', "A volunteer has responded to your post \"{$owner['title']}\". Log in to Community Connect to read the reply.");
+            }
+
             header("Location: /volunteer/dashboard.php?success=Reply submitted successfully!");
             exit;
         } else {

@@ -1,6 +1,10 @@
 <?php
 require_once '../config/db.php';
 require_once '../includes/auth_helper.php';
+require_once '../includes/risk_engine.php';
+require_once '../includes/achievements.php';
+require_once '../includes/recommend.php';
+require_once '../includes/mailer.php';
 
 restrict_to_role('user');
 
@@ -15,10 +19,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($title) || empty($content) || empty($category)) {
         $error = 'Please fill in all fields.';
     } else {
+        $risk = analyze_post_risk($title . ' ' . $content);
         try {
-            $stmt = $pdo->prepare("INSERT INTO posts (user_id, title, content, category, status) VALUES (?, ?, ?, ?, 'pending')");
-            if ($stmt->execute([$user_id, $title, $content, $category])) {
-                header("Location: " . $base_url . "/user/dashboard.php?success=Post submitted successfully. It will appear publicly once approved by moderators.");
+            $stmt = $pdo->prepare("INSERT INTO posts (user_id, title, content, category, status, is_urgent, risk_level, sentiment_label, sentiment_score) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?)");
+            if ($stmt->execute([$user_id, $title, $content, $category, $risk['is_urgent'] ? 1 : 0, $risk['risk_level'], $risk['sentiment_label'], $risk['sentiment_score']])) {
+                evaluate_user_badges($pdo, $user_id, 'user');
+                if ($risk['is_urgent']) {
+                    send_emergency_alert($pdo, $title);
+                }
+                $recommended = recommend_resources($pdo, $category, $content);
+                $rec_ids = implode(',', array_column($recommended, 'id'));
+                header("Location: " . $base_url . "/user/dashboard.php?success=Post submitted successfully. It will appear publicly once approved by moderators.&rec=" . $rec_ids);
                 exit;
             } else {
                 $error = 'Could not save the post. Please try again.';
@@ -38,6 +49,12 @@ require_once '../includes/header.php';
         <ul class="sidebar-nav">
             <li><a href="<?php echo $base_url; ?>/user/dashboard.php">My Posts</a></li>
             <li><a href="<?php echo $base_url; ?>/user/create_post.php" class="active">Create New Post</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/mood_log.php">Log Mood</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/mood_history.php">Mood History</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/journal.php">Wellness Journal</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/volunteers.php">Volunteers</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/messages.php">Messages</a></li>
+            <li><a href="<?php echo $base_url; ?>/user/appointments.php">My Appointments</a></li>
             <li><a href="<?php echo $base_url; ?>/resources.php">Resources</a></li>
             <li><a href="<?php echo $base_url; ?>/emergency.php">Emergency Contacts</a></li>
         </ul>

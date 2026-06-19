@@ -27,7 +27,13 @@ $base_url = rtrim($clean_dir, '/\\');
                 <li><a href="<?php echo $base_url; ?>/index.php" class="<?php echo $current_page == 'index.php' ? 'active' : ''; ?>">Home</a></li>
                 <li><a href="<?php echo $base_url; ?>/resources.php" class="<?php echo $current_page == 'resources.php' ? 'active' : ''; ?>">Resources</a></li>
                 <li><a href="<?php echo $base_url; ?>/emergency.php" class="<?php echo $current_page == 'emergency.php' ? 'active' : ''; ?>">Emergency Help</a></li>
-                
+                <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] !== 'admin'): ?>
+                    <li><a href="<?php echo $base_url; ?>/polls.php" class="<?php echo $current_page == 'polls.php' ? 'active' : ''; ?>">Polls</a></li>
+                <?php endif; ?>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <li><a href="<?php echo $base_url; ?>/assistant.php" class="<?php echo $current_page == 'assistant.php' ? 'active' : ''; ?>">AI Assistant</a></li>
+                <?php endif; ?>
+
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
                         <li><a href="<?php echo $base_url; ?>/admin/dashboard.php" class="<?php echo $current_page == 'dashboard.php' ? 'active' : ''; ?>">Admin Panel</a></li>

@@ -57,8 +57,10 @@ require_once '../includes/header.php';
         <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Admin Menu</h3>
         <ul class="sidebar-nav">
             <li><a href="/admin/dashboard.php">Overview & Moderation</a></li>
+            <li><a href="/admin/analytics.php">Analytics</a></li>
             <li><a href="/admin/users.php">Manage Users</a></li>
             <li><a href="/admin/resources.php" class="active">Manage Resources</a></li>
+            <li><a href="/admin/polls.php">Manage Polls</a></li>
             <li><a href="/resources.php">View Resources</a></li>
             <li><a href="/emergency.php">Emergency Helpline</a></li>
         </ul>

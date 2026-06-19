@@ -24,6 +24,20 @@ CREATE TABLE IF NOT EXISTS `posts` (
     `content` TEXT NOT NULL,
     `category` VARCHAR(50) NOT NULL,
     `status` ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+    `is_urgent` TINYINT(1) NOT NULL DEFAULT 0,
+    `risk_level` ENUM('none', 'low', 'medium', 'high') NOT NULL DEFAULT 'none',
+    `sentiment_label` ENUM('positive', 'neutral', 'negative', 'critical') NOT NULL DEFAULT 'neutral',
+    `sentiment_score` FLOAT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 2b. Table: moods
+CREATE TABLE IF NOT EXISTS `moods` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `mood` ENUM('Happy', 'Neutral', 'Sad', 'Stressed', 'Depressed') NOT NULL,
+    `note` VARCHAR(255) DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -36,6 +50,100 @@ CREATE TABLE IF NOT EXISTS `replies` (
     `content` TEXT NOT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`volunteer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3b. Table: messages (private user <-> volunteer chat)
+CREATE TABLE IF NOT EXISTS `messages` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `volunteer_id` INT NOT NULL,
+    `sender_id` INT NOT NULL,
+    `content` TEXT NOT NULL,
+    `is_read` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`volunteer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    INDEX (`user_id`, `volunteer_id`)
+) ENGINE=InnoDB;
+
+-- 3c. Table: journal_entries
+CREATE TABLE IF NOT EXISTS `journal_entries` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `title` VARCHAR(150) NOT NULL,
+    `content` TEXT NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3d. Table: appointments
+CREATE TABLE IF NOT EXISTS `appointments` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `volunteer_id` INT NOT NULL,
+    `status` ENUM('pending', 'accepted', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+    `notes` VARCHAR(255) DEFAULT NULL,
+    `response_note` VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`volunteer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3e. Table: user_achievements
+CREATE TABLE IF NOT EXISTS `user_achievements` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `badge_code` VARCHAR(50) NOT NULL,
+    `earned_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (`user_id`, `badge_code`),
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3f. Table: polls
+CREATE TABLE IF NOT EXISTS `polls` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `question` VARCHAR(255) NOT NULL,
+    `created_by` INT NOT NULL,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3g. Table: poll_options
+CREATE TABLE IF NOT EXISTS `poll_options` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `poll_id` INT NOT NULL,
+    `option_text` VARCHAR(100) NOT NULL,
+    FOREIGN KEY (`poll_id`) REFERENCES `polls` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3h. Table: poll_votes
+CREATE TABLE IF NOT EXISTS `poll_votes` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `poll_id` INT NOT NULL,
+    `option_id` INT NOT NULL,
+    `user_id` INT NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (`poll_id`, `user_id`),
+    FOREIGN KEY (`poll_id`) REFERENCES `polls` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`option_id`) REFERENCES `poll_options` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 3i. Table: ratings
+CREATE TABLE IF NOT EXISTS `ratings` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `appointment_id` INT NOT NULL UNIQUE,
+    `user_id` INT NOT NULL,
+    `volunteer_id` INT NOT NULL,
+    `rating` TINYINT NOT NULL,
+    `comment` VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`volunteer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

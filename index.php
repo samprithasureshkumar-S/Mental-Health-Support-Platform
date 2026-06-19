@@ -79,13 +79,10 @@ try {
                         <?php else: ?>
                             <?php foreach ($replies as $reply): ?>
                                 <div class="reply-card">
-                                    <div class="reply-header">
-                                        <span>From: <strong class="volunteer-badge">NGO Volunteer</strong></span>
-                                        <span><?php echo date('M d, Y', strtotime($reply['created_at'])); ?></span>
-                                    </div>
-                                    <p style="font-size: 0.95rem;"><?php echo nl2br(htmlspecialchars($reply['content'])); ?></p>
+                                    <p style="font-size: 0.95rem;">
+                                       <?php echo nl2br(htmlspecialchars($reply['content'])); ?>
+                                    </p>
                                 </div>
-                            <?php endcode; ?>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>

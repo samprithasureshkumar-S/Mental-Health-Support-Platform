@@ -1,6 +1,8 @@
 <?php
 require_once '../config/db.php';
 require_once '../includes/auth_helper.php';
+require_once '../includes/risk_engine.php';
+require_once '../includes/mailer.php';
 
 restrict_to_role('user');
 
@@ -36,10 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($title) || empty($content) || empty($category)) {
         $error = 'Please fill in all fields.';
     } else {
+        $risk = analyze_post_risk($title . ' ' . $content);
         try {
             // Re-edit resets status to pending so it goes through moderation again
-            $stmt = $pdo->prepare("UPDATE posts SET title = ?, content = ?, category = ?, status = 'pending' WHERE id = ? AND user_id = ?");
-            if ($stmt->execute([$title, $content, $category, $post_id, $user_id])) {
+            $stmt = $pdo->prepare("UPDATE posts SET title = ?, content = ?, category = ?, status = 'pending', is_urgent = ?, risk_level = ?, sentiment_label = ?, sentiment_score = ? WHERE id = ? AND user_id = ?");
+            if ($stmt->execute([$title, $content, $category, $risk['is_urgent'] ? 1 : 0, $risk['risk_level'], $risk['sentiment_label'], $risk['sentiment_score'], $post_id, $user_id])) {
+                if ($risk['is_urgent']) {
+                    send_emergency_alert($pdo, $title);
+                }
                 header("Location: /user/dashboard.php?success=Post updated successfully. It has been queued for moderation.");
                 exit;
             } else {
@@ -60,6 +66,12 @@ require_once '../includes/header.php';
         <ul class="sidebar-nav">
             <li><a href="/user/dashboard.php" class="active">My Posts</a></li>
             <li><a href="/user/create_post.php">Create New Post</a></li>
+            <li><a href="/user/mood_log.php">Log Mood</a></li>
+            <li><a href="/user/mood_history.php">Mood History</a></li>
+            <li><a href="/user/journal.php">Wellness Journal</a></li>
+            <li><a href="/user/volunteers.php">Volunteers</a></li>
+            <li><a href="/user/messages.php">Messages</a></li>
+            <li><a href="/user/appointments.php">My Appointments</a></li>
             <li><a href="/resources.php">Resources</a></li>
             <li><a href="/emergency.php">Emergency Contacts</a></li>
         </ul>
