@@ -1,4 +1,4 @@
-# 🌱 Community Connect
+# Community Connect
 
 ##  Mental Health Support Platform
 
@@ -6,13 +6,13 @@ Community Connect is a secure and anonymous mental health support platform desig
 
 ---
 
-## 📌 Project Overview
+##  Project Overview
 
 Mental health challenges often go unnoticed due to stigma, fear of judgment, and limited access to support systems. Community Connect addresses these issues by creating a supportive digital space where users can communicate anonymously and receive assistance from volunteers and administrators.
 
 ---
 
-## 🎯 Objectives
+## Objectives
 
 - Provide a safe and anonymous platform for mental health discussions.
 - Connect individuals with trained volunteers for emotional support.
@@ -22,9 +22,9 @@ Mental health challenges often go unnoticed due to stigma, fear of judgment, and
 
 ---
 
-## ✨ Key Features
 
-### 👤 User Module
+
+###  User Module
 - Anonymous registration and login
 - Create and manage support posts
 - View volunteer responses
@@ -32,40 +32,40 @@ Mental health challenges often go unnoticed due to stigma, fear of judgment, and
 - Emergency support access
 - Achievement tracking
 
-### 🤝 Volunteer Module
+###  Volunteer Module
 - View approved support requests
 - Respond to user posts
 - Manage support interactions
 - Community engagement tracking
 
-### 🛡️ Admin Module
+###  Admin Module
 - Dashboard analytics
 - User and volunteer management
 - Content moderation
 - Resource management
 - Emergency support management
 
-### 📚 Resource Library
+###  Resource Library
 - Mental wellness resources
 - Stress management guides
 - Anxiety coping techniques
 - Self-help articles
 
-### 🤖 AI Mental Health Assistant
+###  AI Mental Health Assistant
 - Emotional support guidance
 - Stress management suggestions
 - Breathing exercises
 - Grounding techniques
 - Resource recommendations
 
-### 🚨 Emergency Support
+###  Emergency Support
 - Crisis assistance information
 - Emergency helpline resources
 - Immediate support guidance
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### User Roles
 
@@ -88,7 +88,7 @@ Mental health challenges often go unnoticed due to stigma, fear of judgment, and
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### Frontend
 - HTML5
@@ -108,7 +108,7 @@ Mental health challenges often go unnoticed due to stigma, fear of judgment, and
 
 ---
 
-## 🔐 Security Features
+## Security Features
 
 - Password hashing
 - Session-based authentication
@@ -120,13 +120,13 @@ Mental health challenges often go unnoticed due to stigma, fear of judgment, and
 
 ---
 
-## 📈 Project Impact
+## Project Impact
 
 Community Connect aims to reduce barriers to mental health support by providing a secure, anonymous, and accessible platform for individuals to share their experiences and receive guidance from volunteers and support communities.
 
 ---
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - Real-time chat support
 - AI-powered sentiment analysis
@@ -139,7 +139,7 @@ Community Connect aims to reduce barriers to mental health support by providing 
 
 ---
 
-## 👨‍💻 Developer
+##  Developer
 
 **Sampritha Sureshkumar**
 
